@@ -2,6 +2,7 @@ module.exports = function(db) {
 	this.db = db;
 };
 module.exports.prototype = {
+	collections : {},
 	extend: function(properties) {
 		var Child = module.exports;
 		Child.prototype = module.exports.prototype;
@@ -13,8 +14,8 @@ module.exports.prototype = {
 	setDB: function(db) {
 		this.db = db;
 	},
-	collection: function() {
-		if(this._collection) return this._collection;
-		return this._collection = this.db.collection('fastdelivery-content');
+	collection: function(collection) {
+		if(this.collections.hasOwnProperty(collection)) return this.collections[collection];
+		return this.collections[collection] = this.db.collection('fastdelivery-'+collection);
 	}
 }

@@ -10,6 +10,7 @@ var express = require('express'),
 	app = express(),
 	MongoClient = require('mongodb').MongoClient,
 	Admin = require('./controllers/Admin'),
+	User = require('./controllers/User'),
 	Home = require('./controllers/Home'),
 	Blog = require('./controllers/Blog'),
 	Page = require('./controllers/Page');
@@ -43,7 +44,10 @@ MongoClient.connect('mongodb://' + config.mongo.host + ':' + config.mongo.port +
 		};
 		app.all('/admin*', attachDB, function(req, res, next) {
 			Admin.run(req, res, next);
-		});			
+		});
+		app.all('/signin',attachDB,function(req,res,next){
+			User.signIn(req,res,next);
+		})
 		app.all('/blog/:id', attachDB, function(req, res, next) {
 			Blog.runArticle(req, res, next);
 		});	
