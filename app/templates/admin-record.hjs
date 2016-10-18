@@ -1,4 +1,4 @@
-<form action="/admin" method="post" enctype="multipart/form-data">
+<form action="/admin" method="post" , enctype="multipart/form-data">
 	<input type="hidden" name="formsubmitted" value="yes">
 	<input type="hidden" name="currentPicture" value="{{picture}}">
 	<input type="hidden" name="ID" value="{{ID}}">
@@ -11,7 +11,7 @@
 	Type:<br />
 	<select name="type">
 		{{{type}}
-		<option value="blog">blog</option>
+		<option value="academy">academy</option>
 		<option value="home">home</option>
 		<option value="services">services</option>
 		<option value="careers">careers</option>

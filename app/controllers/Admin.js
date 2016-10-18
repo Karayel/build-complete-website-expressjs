@@ -1,6 +1,6 @@
 var BaseController = require("./Base"),
 	View = require("../views/Base"),
-	model = new (require("../models/ContentModel")),
+	Content = require('../models/Content'),
 	crypto = require("crypto"),
 	fs = require("fs");
 
@@ -11,7 +11,6 @@ module.exports = BaseController.extend({
 	run: function(req, res, next) {
 		var self = this;
 		if(this.authorize(req)) {
-			model.setDB(req.db);
 			req.session.fastdelivery = true;
 			req.session.save();
 			var v = new View(res, 'admin');
@@ -46,7 +45,7 @@ module.exports = BaseController.extend({
 		);
 	},
 	list: function(callback) {
-		model.getlist(function(err, records) {
+		Content.find(function(err, records) {
 			var markup = '<table>';
 			markup += '\
 				<tr>\
@@ -73,10 +72,10 @@ module.exports = BaseController.extend({
 			callback(markup);
 		})
 	},
-	form: function(req, res, callback) {
+	form: function(req, res,callback) {
 		var returnTheForm = function() {
 			if(req.query && req.query.action === "edit" && req.query.id) {
-				model.getlist(function(err, records) {
+				Content.find({ ID: req.query.id},function(err, records) {
 					if(records.length > 0) {
 						var record = records[0];
 						res.render('admin-record', {
@@ -94,7 +93,7 @@ module.exports = BaseController.extend({
 							callback(html);
 						});
 					}
-				}, {ID: req.query.id});
+				});
 			} else {
 				res.render('admin-record', {}, function(err, html) {
 					callback(html);
@@ -102,23 +101,41 @@ module.exports = BaseController.extend({
 			}
 		}
 		if(req.body && req.body.formsubmitted && req.body.formsubmitted === 'yes') {
-			var data = {
-				title: req.body.title,
-				text: req.body.text,
-				type: req.body.type,
-				picture: this.handleFileUpload(req),
-				ID: req.body.ID
+			if(req.body.ID){
+				Content.update({ID: req.body.ID}, {
+					title: req.body.title,
+					text: req.body.text,
+					type: req.body.type,
+					picture: this.handleFileUpload(req)
+				}, function(err, numberAffected, rawResponse) {
+					if(err) {
+						console.error('ERROR!');
+					}
+					returnTheForm();
+				});
+			}else{
+				// create the user
+				var content = new Content();
+				content.title    = req.body.title;
+				content.text = req.body.text;
+				content.type = req.body.type;
+				content.picture = this.handleFileUpload(req);
+
+				content.save(function(err) {
+					if (err)
+						console.log(err);
+					returnTheForm();
+				});
 			}
-			model[req.body.ID != '' ? 'update' : 'insert'](data, function(err, objects) {
-				returnTheForm();
-			});
+
+
 		} else {
 			returnTheForm();
 		}
 	},
 	del: function(req, callback) {
 		if(req.query && req.query.action === "delete" && req.query.id) {
-			model.remove(req.query.id, callback);
+			Content.findOneAndRemove({ ID : req.query.id},callback);
 		} else {
 			callback();
 		}
